@@ -6,6 +6,11 @@ import { PAGFile } from './pag-file';
 import { Log } from './utils/log';
 import { ErrorCode } from './utils/error-map';
 import { SCREEN_2560_RESOLUTION } from './constant';
+/* #if _WECHAT
+import { isWechatMiniProgram } from './utils/ua';
+import { getWechatElementById, requestAnimationFrame, cancelAnimationFrame } from './utils/wechat-babel';
+//#else */
+// #endif
 
 export class PAGView {
   public static module: PAG;
@@ -18,27 +23,43 @@ export class PAGView {
   ): Promise<PAGView | undefined> {
     let canvasElement: HTMLCanvasElement | null = null;
     if (typeof canvas === 'string') {
+      /* #if _WECHAT
+      canvasElement = await getWechatElementById(canvas);
+      //#else */
       canvasElement = document.getElementById(canvas.substr(1)) as HTMLCanvasElement;
+      // #endif
     } else if (canvas instanceof HTMLCanvasElement) {
       canvasElement = canvas;
     }
+    /* #if _WECHAT
+    const dpr = wx.getSystemInfoSync().pixelRatio
+    //#else */
+    const dpr = window.devicePixelRatio;
+    // #endif
     if (!canvasElement) {
       Log.errorByCode(ErrorCode.CanvasIsNotFound);
     } else {
-      const rawWidth = canvasElement.width * window.devicePixelRatio;
-      const rawHeight = canvasElement.height * window.devicePixelRatio;
+      const rawWidth = canvasElement.width * dpr;
+      const rawHeight = canvasElement.height * dpr;
       if (rawWidth > SCREEN_2560_RESOLUTION || rawHeight > SCREEN_2560_RESOLUTION) {
         Log.warn(
           "Don't render the target larger than 2560 px resolution. It may be a render failure in the low graphic memory device.",
         );
       }
+      /* #if _WECHAT
+      //#else */
       canvasElement.style.width = `${canvasElement.width}px`;
       canvasElement.style.height = `${canvasElement.height}px`;
-      canvasElement.width = canvasElement.width * window.devicePixelRatio;
-      canvasElement.height = canvasElement.height * window.devicePixelRatio;
+      // #endif
+      canvasElement.width = canvasElement.width * dpr;
+      canvasElement.height = canvasElement.height * dpr;
+      /* #if _WECHAT
+      const gl = canvasElement.getContext('webgl', { alpha: true });
+      //#else */
+      const gl = canvasElement.getContext('webgl');
+      // #endif
       const pagPlayer = this.module.PAGPlayer.create();
       const pagView = new PAGView(pagPlayer);
-      const gl = canvasElement.getContext('webgl');
       if (!(gl instanceof WebGLRenderingContext)) {
         Log.errorByCode(ErrorCode.CanvasContextIsNotWebGL);
       } else {
@@ -266,9 +287,15 @@ export class PAGView {
     if (!this.isPlaying) {
       return;
     }
+    /* #if _WECHAT
+    this.timer = requestAnimationFrame(async () => {
+      await this.flushLoop();
+    });
+    //#else */
     this.timer = window.requestAnimationFrame(async () => {
       await this.flushLoop();
     });
+    // #endif
     await this.flushNextFrame();
   }
 
@@ -291,7 +318,11 @@ export class PAGView {
 
   private clearTimer(): void {
     if (this.timer) {
+      /* #if _WECHAT
+      cancelAnimationFrame(this.timer);
+      //#else */
       window.cancelAnimationFrame(this.timer);
+      // #endif
       this.timer = null;
     }
   }
