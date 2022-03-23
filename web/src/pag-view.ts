@@ -28,8 +28,8 @@ export class PAGView {
       //#else */
       canvasElement = document.getElementById(canvas.substr(1)) as HTMLCanvasElement;
       // #endif
-    } else if (canvas instanceof HTMLCanvasElement) {
-      canvasElement = canvas;
+    } else {
+      canvasElement = canvas as HTMLCanvasElement;
     }
     /* #if _WECHAT
     const dpr = wx.getSystemInfoSync().pixelRatio
@@ -50,9 +50,9 @@ export class PAGView {
       //#else */
       canvasElement.style.width = `${canvasElement.width}px`;
       canvasElement.style.height = `${canvasElement.height}px`;
-      // #endif
       canvasElement.width = canvasElement.width * dpr;
       canvasElement.height = canvasElement.height * dpr;
+      // #endif
       /* #if _WECHAT
       const gl = canvasElement.getContext('webgl', { alpha: true });
       //#else */
