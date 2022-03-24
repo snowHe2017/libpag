@@ -32,7 +32,7 @@ export class PAGView {
       canvasElement = canvas as HTMLCanvasElement;
     }
     /* #if _WECHAT
-    const dpr = wx.getSystemInfoSync().pixelRatio
+    const dpr = 2;
     //#else */
     const dpr = window.devicePixelRatio;
     // #endif
@@ -50,8 +50,8 @@ export class PAGView {
       //#else */
       canvasElement.style.width = `${canvasElement.width}px`;
       canvasElement.style.height = `${canvasElement.height}px`;
-      canvasElement.width = canvasElement.width * dpr;
-      canvasElement.height = canvasElement.height * dpr;
+      canvasElement.width = rawWidth;
+      canvasElement.height = rawHeight;
       // #endif
       /* #if _WECHAT
       const gl = canvasElement.getContext('webgl', { alpha: true });
@@ -60,7 +60,7 @@ export class PAGView {
       // #endif
       const pagPlayer = this.module.PAGPlayer.create();
       const pagView = new PAGView(pagPlayer);
-      if (!(gl instanceof WebGLRenderingContext)) {
+      if (!gl) {
         Log.errorByCode(ErrorCode.CanvasContextIsNotWebGL);
       } else {
         const contextID = this.module.GL.registerContext(gl, { majorVersion: 1, minorVersion: 0 });
@@ -172,7 +172,7 @@ export class PAGView {
    * Set the progress of play position, the value is from 0.0 to 1.0.
    */
   public async setProgress(progress: number): Promise<number> {
-    this.playTime = progress * (await this.duration());
+    this.playTime = progress * this.duration();
     this.startTime = Date.now() * 1000 - this.playTime;
     if (!this.isPlaying) {
       this.player.setProgress(progress);
@@ -252,8 +252,8 @@ export class PAGView {
    * Call this method to render current position immediately. If the play() method is already
    * called, there is no need to call it. Returns true if the content has changed.
    */
-  public async flush() {
-    await this.player.flush();
+  public flush() {
+    this.player.flush();
     this.eventManager.emit(PAGViewListenerEvent.onAnimationFlushed, this);
   }
   /**
