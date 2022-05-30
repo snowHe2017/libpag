@@ -131,7 +131,8 @@ enum class TagCode {
 
   RadialBlurEffect = 81,
   MosaicEffect = 82,
-  MaskBlockV2 = 83,
+  EditableIndices = 83,
+  MaskBlockV2 = 84,
 
   // add new tags here...
 
@@ -2218,8 +2219,11 @@ class PAG_API File {
   TimeRange scaledTimeRange = {};
   FileAttributes fileAttributes = {};
   std::string path = "";
-  std::vector<pag::ImageBytes*> images;
+  std::vector<ImageBytes*> images;
   std::vector<Composition*> compositions;
+
+  std::vector<int>* editableImages = nullptr;
+  std::vector<int>* editableTexts = nullptr;
 
  private:
   PreComposeLayer* rootLayer = nullptr;

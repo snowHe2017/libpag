@@ -18,33 +18,11 @@
 
 #pragma once
 
-#include "pathkit.h"
+#include "codec/DataTypes.h"
 
-namespace tgfx {
-class Path;
+namespace pag {
 
-// When tessellating curved paths into linear segments, this defines the maximum distance in
-// screen space which a segment may deviate from the mathematically correct value. Above this
-// value, the segment will be subdivided. This value was chosen to approximate the super sampling
-// accuracy of the raster path (16 samples, or one quarter pixel).
-static constexpr float DefaultTolerance = 0.25f;
+void ReadEditableIndices(DecodeStream* stream);
 
-class PathRef {
- public:
-  static const pk::SkPath& ReadAccess(const Path& path);
-
-  static pk::SkPath& WriteAccess(Path& path);
-
-  PathRef() = default;
-
-  explicit PathRef(const pk::SkPath& path) : path(path) {
-  }
-
- private:
-  pk::SkPath path = {};
-
-  friend class Path;
-  friend bool operator==(const Path& a, const Path& b);
-  friend bool operator!=(const Path& a, const Path& b);
-};
-}  // namespace tgfx
+TagCode WriteEditableIndices(EncodeStream* stream, const File* file);
+}  // namespace pag
